@@ -1,45 +1,34 @@
 # Supplier Sourcing Insights API
 
-A FastAPI application that generates structured procurement insights using Google Gemini LLM.
+FastAPI app that generates procurement insights using LLM.
+
+**Live Demo:** https://coding-assignment-supplierinsightsapi-production.up.railway.app/docs
+
+**LLM Used:** Groq (llama-3.3-70b) - chose this because it's free with generous rate limits, making it ideal for development and demos.
 
 ---
 
-## 1. How to Run the API Locally
+## How to Run Locally
 
-### Prerequisites
-- Python 3.10+
-- Google Gemini API key (free at https://aistudio.google.com/app/apikey)
-
-### Setup
 ```bash
-# Create virtual environment
+# Setup
 python -m venv venv
-
-# Activate (Windows)
-venv\Scripts\activate
-
-# Activate (Mac/Linux)
-source venv/bin/activate
-
-# Install dependencies
+venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 
-# Create .env file
-echo "GOOGLE_API_KEY=your_api_key_here" > .env
+# Add API key (free at https://console.groq.com/keys)
+echo "GROQ_API_KEY=your_key_here" > .env
 
-# Run server
+# Run
 uvicorn app.main:app --reload
 ```
 
-### Access
-- API: http://127.0.0.1:8000
-- Docs: http://127.0.0.1:8000/docs
+Open: http://127.0.0.1:8000/docs
 
 ---
 
-## 2. How to Call the Endpoint
+## Example Request
 
-### Example Request
 ```bash
 curl -X POST "http://127.0.0.1:8000/generate-insights" \
   -H "Content-Type: application/json" \
@@ -53,110 +42,50 @@ curl -X POST "http://127.0.0.1:8000/generate-insights" \
         "contract_expiry_months": 6,
         "single_source_dependency": true,
         "region": "North America"
-      },
-      {
-        "supplier_name": "GlobalComp Solutions",
-        "annual_spend_usd": 3100000,
-        "on_time_delivery_pct": 85,
-        "contract_expiry_months": 3,
-        "single_source_dependency": false,
-        "region": "Asia"
-      },
-      {
-        "supplier_name": "NextGen Systems",
-        "annual_spend_usd": 1800000,
-        "on_time_delivery_pct": 97,
-        "contract_expiry_months": 12,
-        "single_source_dependency": false,
-        "region": "Europe"
       }
     ]
   }'
 ```
 
-### Example Response
+## Example Response
+
 ```json
 {
   "category": "IT Hardware",
   "overall_risk_level": "High",
   "key_risks": [
-    "Single-source dependency on TechSource Inc. ($4.2M, 46% of spend)",
-    "Urgent: GlobalComp Solutions contract expires in 3 months",
-    "Low delivery performance: GlobalComp Solutions at 85%"
+    "Single-source dependency on TechSource Inc. ($4.2M, 100% of spend)"
   ],
   "negotiation_levers": [
-    "Volume leverage with TechSource Inc. (46% of category spend)",
-    "Top performer: NextGen Systems (97% on-time delivery)",
-    "Volume leverage with GlobalComp Solutions (34% spend)"
+    "Volume leverage with TechSource Inc."
   ],
   "recommended_actions_next_90_days": [
-    "Immediate: Initiate contract renewal with GlobalComp Solutions",
-    "Develop backup supplier for TechSource Inc. single-source risk",
-    "Begin contract renewal discussions with TechSource Inc. (expires in 6 months)"
+    "Develop backup supplier to reduce single-source risk"
   ],
-  "confidence_score": 0.87
+  "confidence_score": 0.85
 }
 ```
 
 ---
 
-## 3. Assumptions
+## Assumptions
 
-1. **Data Quality**: Input supplier data is accurate and complete
-2. **Currency**: All spend values are in USD
-3. **Delivery Metric**: On-time delivery percentage (0-100) is the primary performance KPI
-4. **Time Horizon**: "Next 90 days" is the actionable planning window
-5. **Risk Thresholds**:
-   - High risk: >40% spend with single source, or contract ≤3 months, or delivery <80%
-   - Medium risk: Contract ≤6 months, or delivery 80-90%
-   - Low risk: Diversified suppliers with good performance
+- All spend values in USD.
+- On-time delivery % is the primary performance metric.
+- Risk thresholds: High (>40% single-source, contract ≤3mo, delivery <80%), Medium (contract ≤6mo, delivery 80-90%), Low (diversified, good performance).
+- 'Next 90 days' is the planning window.
 
 ---
 
-## 4. Production Improvements
+## Production Improvements
 
-| Area | Current | Production Enhancement |
-|------|---------|----------------------|
-| **Authentication** | None | Add JWT/API key authentication |
-| **Rate Limiting** | None | Implement per-client rate limits |
-| **Caching** | None | Cache identical requests (Redis) |
-| **Database** | None | Store historical analyses for trends |
-| **Monitoring** | Basic logging | Add Prometheus metrics, alerts |
-| **Scaling** | Single instance | Kubernetes with auto-scaling |
-| **LLM Fallback** | Rule-based | Multiple LLM providers (OpenAI, Claude) |
-| **Async Processing** | Sync | Queue long-running analyses (Celery) |
-| **Testing** | Manual | Automated CI/CD pipeline |
-| **Security** | Basic | Input sanitization, HTTPS, audit logs |
+- **Better LLM Models** - Switch to OpenAI GPT-4 or Claude for more nuanced analysis (paid but higher quality).
+- **Authentication** - Add JWT/API keys.
+- **Rate Limiting** - Per-client limits.
+- **Caching** - Redis for repeated queries.
+- **Database** - Store historical analyses for trend tracking.
+- **Monitoring** - Prometheus metrics, alerting.
+- **Scaling** - Kubernetes with auto-scaling.
+- **Multiple LLMs** - Fallback to OpenAI/Claude if Groq fails.
 
 ---
-
-## 5. Project Structure
-
-```
-├── app/
-│   ├── __init__.py
-│   ├── main.py           # FastAPI application
-│   ├── models.py         # Pydantic models
-│   └── llm_service.py    # Gemini LLM integration
-├── .env                  # API keys (not in git)
-├── requirements.txt
-└── README.md
-```
-
----
-
-## 6. Time Taken
-
-| Task | Time |
-|------|------|
-| FastAPI setup + endpoint | 15 min |
-| Pydantic models | 10 min |
-| LLM integration + prompts | 20 min |
-| Error handling | 10 min |
-| Testing & debugging | 15 min |
-| **Total (Points 1 & 2)** | **~70 minutes** |
-
----
-
-## Author
-Dhairya - M.S. Computer Science, Northeastern University
