@@ -6,7 +6,10 @@ FastAPI app that generates procurement insights using LLM.
 
 **LLM Used:** Groq (llama-3.3-70b) - chose this because it's free with generous rate limits, making it ideal for development and demos.
 
+**Frontend:** I also built a simple Streamlit frontend for easier interaction. Run locally with `streamlit run frontend.py` → http://localhost:8501
+
 ---
+
 
 ## How to Run Locally
 
